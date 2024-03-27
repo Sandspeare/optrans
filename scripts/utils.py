@@ -10,11 +10,6 @@ import json
 
 
 def cross_entropy_loss(anchor, positive, negative=None, T: float = 0.07):
-    # Shape of result1 and result2: (batch_size, embedding_dimension)
-    # Shape of negative: (negative_size, embedding_dimension)
-    # normalization on the last dimension
-    # anchor = F.normalize(anchor, p=2, dim=-1)
-    # positive = F.normalize(positive, p=2, dim=-1)
     l_pos = torch.einsum("ad,pd->ap", [anchor, positive])  # [batch_size, batch_size]
 
     if negative is not None:

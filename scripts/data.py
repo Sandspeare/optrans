@@ -18,9 +18,9 @@ from torch.utils.data import DataLoader
 from microlm import tokenize_function
 from transformers import AutoTokenizer, AutoModel
 
-class EncodeMicroDataset(torch.utils.data.Dataset): #binary version dataset
+class EncodeMicroDataset(torch.utils.data.Dataset):
 
-    def __init__(self, path, tokenizer):  #random visit
+    def __init__(self, path, tokenizer):
         data_list = []
         dataset = load_from_disk(path)
         for data in dataset:
@@ -44,8 +44,7 @@ class EncodeMicroDataset(torch.utils.data.Dataset): #binary version dataset
         x_input = self.tokenizer.pad(x_input, padding=True, pad_to_multiple_of=8, return_tensors="pt", verbose=False)
         return x_input, length, asm
 
-    def __getitem__(self, idx):             #also return bad pair
-
+    def __getitem__(self, idx):
         asm = self.asmset[idx]
         x = json.loads(asm)
         x_input = tokenize_function(self.tokenizer, x, model_max_length=1024)  
@@ -54,9 +53,9 @@ class EncodeMicroDataset(torch.utils.data.Dataset): #binary version dataset
     def __len__(self):
         return len(self.asmset)
 
-class OpTransTrainDataset(torch.utils.data.Dataset): #binary version dataset
+class OpTransTrainDataset(torch.utils.data.Dataset):
 
-    def __init__(self, path, tokenizer, options):  #random visit
+    def __init__(self, path, tokenizer, options): 
         dataset = load_from_disk(path)
         self.options = options
         self.dataset = dataset.filter(self.filter_columns)
@@ -68,26 +67,10 @@ class OpTransTrainDataset(torch.utils.data.Dataset): #binary version dataset
 
     def filter_columns(self, sample):  
         count = 0
-        min = 9999
-        max = 0
-
         for opt in sample:
             if opt == 'name':
                 continue
-            if sample[opt] != None:
-                count += 1
-                if len(json.loads(sample[opt])) > max:
-                    max = len(json.loads(sample[opt]))
-
-                if len(json.loads(sample[opt])) < min:
-                    min = len(json.loads(sample[opt]))
-        
-        if max / min > 3:
-            return False
-    
-        if min < 3:
-            return False
-
+            count += 1
         return False if count < 2 else True
 
     def collate_gat(self, batch):
@@ -105,7 +88,7 @@ class OpTransTrainDataset(torch.utils.data.Dataset): #binary version dataset
         self.nameset = set()
         return arc_tokens, pos_tokens, neg_tokens
 
-    def __getitem__(self, idx):             #also return bad pair
+    def __getitem__(self, idx): 
 
         data = self.dataset[idx]
 
@@ -114,9 +97,6 @@ class OpTransTrainDataset(torch.utils.data.Dataset): #binary version dataset
 
         arc_tokens = data[opt[0]]
         pos_tokens = data[opt[1]]
-
-        # arc_tokens = data[opt[(0 + self.index) % len(opt)]]
-        # pos_tokens = data[opt[(1 + self.index) % len(opt)]]
 
         self.index += 1
 
@@ -140,9 +120,9 @@ class OpTransTrainDataset(torch.utils.data.Dataset): #binary version dataset
     def __len__(self):
         return len(self.dataset)
 
-class BCSDatasetDBG(torch.utils.data.Dataset): #binary version dataset
+class BCSDataset(torch.utils.data.Dataset):
 
-    def __init__(self, options, path):  #random visit
+    def __init__(self, options, path):
         self.opt1 = options[0]
         self.opt2 = options[1]
         dataset = load_from_disk(path).shuffle(seed=42)
@@ -159,38 +139,15 @@ class BCSDatasetDBG(torch.utils.data.Dataset): #binary version dataset
         collate a batch of graph
         """
         x_input = [item[0] for item in batch]
-        y_input = [item[1] for item in batch]
-        x_len =   [item[2] for item in batch]
-        y_len =   [item[3] for item in batch]
-        x_code =  [item[4] for item in batch]
-        y_code =  [item[5] for item in batch]
-        name =    [item[6] for item in batch]
-       
-        return torch.tensor(x_input), torch.tensor(y_input), x_len, y_len, x_code, y_code, name
+        y_input = [item[1] for item in batch]       
+        return torch.tensor(x_input), torch.tensor(y_input)
 
-    def __getitem__(self, idx):             #also return bad pair
+    def __getitem__(self, idx):  
 
         data = self.dataset[idx]
         x_input = data[self.opt1]
         y_input = data[self.opt2]
-        x_len = data[self.opt1 + "_len"]
-        y_len = data[self.opt2 + "_len"]
-        x_code = data[self.opt1 + "_code"]
-        y_code = data[self.opt2 + "_code"]
-        return x_input, y_input, x_len, y_len, x_code, y_code, data["name"]
+        return x_input, y_input
     
     def __len__(self):
         return len(self.dataset)
-
-if __name__ == '__main__':
-
-    tokenizer = "/mnt/data/szh/models/microlm/"
-    path = "/mnt/data/szh/share/datasets/optrans/BinaryCorp/hf/disasm/small_test"
-    options = ["O0", "O1", "O2", "O3", "Os"]
-    fp_train_data = OpTransTrainDataset(path, tokenizer, options)
-
-    train_dataloader = DataLoader(fp_train_data, batch_size=8, num_workers=0, shuffle=True, collate_fn=fp_train_data.collate_gat)   #, prefetch_factor=4)
-
-    for arc_tokens, pos_tokens, neg_tokens in tqdm(train_dataloader):
-
-        print(arc_tokens, pos_tokens, neg_tokens)
