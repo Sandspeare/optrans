@@ -116,13 +116,13 @@ Here is a demo
 ### Fine-tune
 We provide a script to fine-tune the base model with your own datasets.
 ```bash
-python fine_tune.py
+python Intuition/fine_tune.py
 ```
 
 ### Fast evalution
 We provide scripts to fast evaluate the model performance of binary code similarity detection.
 
 ```bash
-python create_embeddings.py --output_path embedding_dataset
-python fast_eval.py --data_path embedding_dataset
+python Intuition/create_embeddings.py --output_path embedding_dataset
+python Intuition/fast_eval.py --data_path embedding_dataset
 ```
