@@ -49,6 +49,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 tokenizer = AutoTokenizer.from_pretrained("sandspeare/optrans", trust_remote_code=True)
 encoder = AutoModel.from_pretrained("sandspeare/optrans", trust_remote_code=True).to(device)
+tokenizer.pad_token = tokenizer.unk_token
 ```
 
 ### Example Use Cases
@@ -57,21 +58,21 @@ encoder = AutoModel.from_pretrained("sandspeare/optrans", trust_remote_code=True
 1. Load your binary code dataset. For demonstration, we use a pickle file containing binary code snippets for similarity compare.
 
 ```python
-with open("./casestudy.pickle") as fp:
-   asm = json.load(fp)
+with open("./CaseStudy/casestudy.json") as fp:
+   data = json.load(fp)
 ```
 
-2. Encode the assembly code.
+2. Encode the binary code.
 
 ```python
-asm_O0 = asm_tokenizer([asm["O0"]], padding=True, return_tensors="pt").to(device)
-asm_embedding_O0 = asm_encoder(**asm_O0)
+asm_O0 = tokenizer([data["O0"]], padding=True, return_tensors="pt").to(device)
+asm_embedding_O0 = encoder(**asm_O0)
 
-asm_O0_inline = asm_tokenizer([asm["O0_inline"]], padding=True, return_tensors="pt").to(device)
-asm_embedding_O0_inline = asm_encoder(**asm_O0_inline)
+asm_O0_inline = tokenizer([data["O0_inline"]], padding=True, return_tensors="pt").to(device)
+asm_embedding_O0_inline = encoder(**asm_O0_inline)
 
-asm_O3 = asm_tokenizer([asm["O3"]], padding=True, return_tensors="pt").to(device)
-asm_embedding_O3 = asm_encoder(**asm_O3)
+asm_O3 = tokenizer([data["O3"]], padding=True, return_tensors="pt").to(device)
+asm_embedding_O3 = encoder(**asm_O3)
 ```
 
 3. Perform similarity comparison:
