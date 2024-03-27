@@ -15,7 +15,7 @@ OpTrans (Re-Optimization Transformer), is an innovative framework fuses binary c
 
 ## News
 
-- [2024/3/27] OpTrans is available on Hugging Face Model Hub (https://huggingface.co/hustcw/clap-asm).
+- [2024/3/27] OpTrans is available on Hugging Face Model Hub (https://huggingface.co/sandspeare/optrans).
 
 
 ## QuickStart
